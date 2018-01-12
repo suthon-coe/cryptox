@@ -11,19 +11,28 @@ class App extends Component {
     this.state = {}
   }
 
-  componentDidMount(){
+  //refactor
+  extractPrice(data){
+    let price_state = {}
+    _.each(this.SYMBOLS, symbol => {
+      price_state[symbol] = _.find(data, ['symbol', symbol]).price_thb
+    })
+    this.setState(price_state)
+  }
+
+  loadPrice(){
     let self = this
     axios.get('https://api.coinmarketcap.com/v1/ticker/?convert=THB')
     .then(function (response) {
-      let price_state = {}
-      _.each(self.SYMBOLS, symbol => {
-        price_state[symbol] = _.find(response.data, ['symbol', symbol]).price_thb
-      })
-      self.setState(price_state)
+      self.extractPrice(response.data)
     })
     .catch(function (error) {
       console.log(error);
     });
+  }
+
+  componentDidMount(){
+    setInterval(this.loadPrice.bind(this), 3000)
   }
 
   render() {
